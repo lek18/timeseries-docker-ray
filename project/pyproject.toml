@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "timeseries-docker-ray"
+version = "0.1.0"
+description = ""
+authors = ["Luis Ek <52711401+lek18@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "timeseries_docker_ray"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pmdarima = "^2.0.3"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
