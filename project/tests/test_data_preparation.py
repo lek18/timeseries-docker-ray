@@ -10,6 +10,40 @@ class TestGenerateData:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.mockGenerateData = data_preparation.GenerateData(path="fakepath")
+        self.mock_time_series, self.time_range = self.generate_mock_time_series_data()
+
+    def generate_mock_time_series_data(self) -> pd.DataFrame:
+        # Example DataFrame
+
+        # Set the random seed for reproducibility
+        np.random.seed(42)
+
+        # Generate dates for one year
+        start_date = pd.Timestamp("2021-01-01")
+        end_date = pd.Timestamp("2023-12-31")
+        dates = pd.date_range(start_date, end_date, freq="D")
+
+        # Generate random sales data for each date
+        sales = np.random.randint(100, 1000, len(dates))
+
+        # Create a DataFrame with dates and sales
+        df = pd.DataFrame({"timestamp": dates, "sale_amount": sales})
+
+        # Randomly remove 50% of the rows
+        df = df.sample(frac=0.5, random_state=42)
+
+        # Reset the index of the DataFrame
+        df.reset_index(drop=True, inplace=True)
+
+        # repeat the df above for say 5 products.
+        time_series_df = pd.DataFrame()
+        N = 5
+        for i in range(N):
+            product_title = str(i)
+            df["product_title"] = product_title
+            time_series_df = pd.concat([time_series_df, df], axis=0)
+
+        return time_series_df, len(dates) * N
 
     def test_get_dates(self):
         generate_data = data_preparation.GenerateData(path="fake_path")
@@ -81,46 +115,53 @@ class TestGenerateData:
         output = self.mockGenerateData.fill_dates(df=df)
 
         expected = [
-            {"product_title": "A", "date": 33},
-            {"product_title": "B", "date": 34},
-            {"product_title": "C", "date": 93},
+            {
+                "product_title": "A",
+                "date": 33,
+                "year": 33,
+                "month": 33,
+                "quarter": 33,
+                "week": 33,
+            },
+            {
+                "product_title": "B",
+                "date": 34,
+                "year": 34,
+                "month": 34,
+                "quarter": 34,
+                "week": 34,
+            },
+            {
+                "product_title": "C",
+                "date": 93,
+                "year": 93,
+                "month": 93,
+                "quarter": 93,
+                "week": 93,
+            },
         ]
 
         output = (
             output.groupby(["product_title"], as_index=False).count().to_dict("records")
         )
+        print(output)
         assert output == expected
 
     def test_impute_data(self):
-        # Example DataFrame
+        # get mock time series data
+        time_series_df = self.mock_time_series.copy()
 
-        # Set the random seed for reproducibility
-        np.random.seed(42)
+        # add weeks, years, months, quarters
+        time_series_df = self.mockGenerateData.get_dates(time_series_df)
 
-        # Generate dates for one year
-        start_date = pd.Timestamp("2022-01-01")
-        end_date = pd.Timestamp("2022-12-31")
-        dates = pd.date_range(start_date, end_date, freq="D")
+        # get the partition averages
+        time_series_df = self.mockGenerateData.get_partitions_averages(time_series_df)
 
-        # Generate random sales data for each date
-        sales = np.random.randint(100, 1000, len(dates))
+        # get time series with all the filled dates
+        filled_sales_df = self.mockGenerateData.fill_dates(time_series_df)
 
-        # Create a DataFrame with dates and sales
-        df = pd.DataFrame({"date": dates, "sales": sales})
+        output = self.mockGenerateData.impute_data(
+            filled_sales_df=filled_sales_df, sales_df=time_series_df
+        )
 
-        # Randomly remove 50% of the rows
-        df = df.sample(frac=0.5, random_state=42)
-
-        # Reset the index of the DataFrame
-        df.reset_index(drop=True, inplace=True)
-
-        # Extract year, month, quarter, and week components
-        df["year"] = df["date"].dt.year
-        df["month"] = df["date"].dt.month
-        df["quarter"] = df["date"].dt.quarter
-        df["week"] = df["date"].dt.isocalendar().week
-
-        generateData = data_preparation.GenerateData(path="fakepath")
-        output = generateData.impute_data(df=df)
-
-        assert output.shape == (182, 6)
+        assert output.shape[0] == self.time_range

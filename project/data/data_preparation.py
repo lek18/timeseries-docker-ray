@@ -66,10 +66,16 @@ class GenerateData:
                 {"product_title": [product] * len(date_range), "date": date_range}
             )
 
+            # add the week, month, quarter, year
+            temp_df["year"] = temp_df["date"].dt.year
+            temp_df["month"] = temp_df["date"].dt.month
+            temp_df["quarter"] = temp_df["date"].dt.quarter
+            temp_df["week"] = temp_df["date"].dt.isocalendar().week
+            temp_df["date"] = temp_df["date"].dt.date
             # Append the temporary DataFrame to the filled_dates_df
             filled_dates_df = pd.concat([filled_dates_df, temp_df], axis=0)
 
-        return filled_dates_df.sort_values(["date"], ascending=True)
+        return filled_dates_df.sort_values(["product_title", "date"], ascending=True)
 
     def get_partitions_averages(self, df: pd.DataFrame) -> pd.DataFrame:
         # compute the weekly,monthly, and yearly daily averages
@@ -88,11 +94,6 @@ class GenerateData:
         Impute the full time series data if required by the first nonnull value
         from [weekly, monthly, quarterly, yearly]
         """
-        # add the week, month, quarter, year
-        filled_sales_df["year"] = filled_sales_df["date"].dt.year
-        filled_sales_df["month"] = filled_sales_df["date"].dt.month
-        filled_sales_df["quarter"] = filled_sales_df["date"].dt.quarter
-        filled_sales_df["week"] = filled_sales_df["date"].dt.isocalendar().week
 
         # create a df for each group of time
         weeks = sales_df[["product_title", "year", "week", "weekly"]].drop_duplicates()
@@ -107,8 +108,8 @@ class GenerateData:
         # add the sales to filled_sales_df from sales_df
 
         filled_sales_df = filled_sales_df.merge(
-            sales_df[[["product_title", "date", "sale_amount"]]],
-            on=["product_title", "date", "sale_amount"],
+            sales_df[["product_title", "date", "sale_amount"]],
+            on=["product_title", "date"],
             how="left",
         )
 
