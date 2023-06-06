@@ -37,9 +37,6 @@ class GenerateData:
 
         return df
 
-    def impute_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        return df
-
     def fill_dates(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         time series data need to be filled, and this should be done
@@ -84,6 +81,50 @@ class GenerateData:
 
         return df
 
-        # generate the monthly data
+    def impute_data(
+        self, filled_sales_df: pd.DataFrame, sales_df: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Impute the full time series data if required by the first nonnull value
+        from [weekly, monthly, quarterly, yearly]
+        """
+        # add the week, month, quarter, year
+        filled_sales_df["year"] = filled_sales_df["date"].dt.year
+        filled_sales_df["month"] = filled_sales_df["date"].dt.month
+        filled_sales_df["quarter"] = filled_sales_df["date"].dt.quarter
+        filled_sales_df["week"] = filled_sales_df["date"].dt.isocalendar().week
 
-        # provide the results as a pandas df or each product has its own input data
+        # create a df for each group of time
+        weeks = sales_df[["product_title", "year", "week", "weekly"]].drop_duplicates()
+        months = sales_df[
+            ["product_title", "year", "month", "monthly"]
+        ].drop_duplicates()
+        quarters = sales_df[
+            ["product_title", "year", "quarter", "quarterly"]
+        ].drop_duplicates()
+        years = sales_df[["product_title", "year", "yearly"]].drop_duplicates()
+
+        # add the sales to filled_sales_df from sales_df
+
+        filled_sales_df = filled_sales_df.merge(
+            sales_df[[["product_title", "date", "sale_amount"]]],
+            on=["product_title", "date", "sale_amount"],
+            how="left",
+        )
+
+        # now i must add the missing date to filled_sales_df
+        filled_sales_df = filled_sales_df.merge(weeks, how="left")
+        filled_sales_df = filled_sales_df.merge(months, how="left")
+        filled_sales_df = filled_sales_df.merge(quarters, how="left")
+        filled_sales_df = filled_sales_df.merge(years, how="left")
+
+        #  Impute missing values with the first non-null mean value in order
+        filled_sales_df["sale_amount"] = filled_sales_df["sale_amount"].fillna(
+            filled_sales_df["weekly"].fillna(
+                filled_sales_df["monthly"].fillna(
+                    filled_sales_df["quarterly"].fillna(filled_sales_df["yearly"])
+                )
+            )
+        )
+
+        return filled_sales_df

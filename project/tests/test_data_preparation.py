@@ -1,5 +1,6 @@
 import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 from data import data_preparation
@@ -79,39 +80,47 @@ class TestGenerateData:
 
         output = self.mockGenerateData.fill_dates(df=df)
 
-        assert output == output
+        expected = [
+            {"product_title": "A", "date": 33},
+            {"product_title": "B", "date": 34},
+            {"product_title": "C", "date": 93},
+        ]
 
-    # def test_impute_data(self):
+        output = (
+            output.groupby(["product_title"], as_index=False).count().to_dict("records")
+        )
+        assert output == expected
 
-    #     # Example DataFrame
+    def test_impute_data(self):
+        # Example DataFrame
 
-    #     # Set the random seed for reproducibility
-    #     np.random.seed(42)
+        # Set the random seed for reproducibility
+        np.random.seed(42)
 
-    #     # Generate dates for one year
-    #     start_date = pd.Timestamp('2022-01-01')
-    #     end_date = pd.Timestamp('2022-12-31')
-    #     dates = pd.date_range(start_date, end_date, freq='D')
+        # Generate dates for one year
+        start_date = pd.Timestamp("2022-01-01")
+        end_date = pd.Timestamp("2022-12-31")
+        dates = pd.date_range(start_date, end_date, freq="D")
 
-    #     # Generate random sales data for each date
-    #     sales = np.random.randint(100, 1000, len(dates))
+        # Generate random sales data for each date
+        sales = np.random.randint(100, 1000, len(dates))
 
-    #     # Create a DataFrame with dates and sales
-    #     df = pd.DataFrame({'date': dates, 'sales': sales})
+        # Create a DataFrame with dates and sales
+        df = pd.DataFrame({"date": dates, "sales": sales})
 
-    #     # Randomly remove 50% of the rows
-    #     df = df.sample(frac=0.5, random_state=42)
+        # Randomly remove 50% of the rows
+        df = df.sample(frac=0.5, random_state=42)
 
-    #     # Reset the index of the DataFrame
-    #     df.reset_index(drop=True, inplace=True)
+        # Reset the index of the DataFrame
+        df.reset_index(drop=True, inplace=True)
 
-    #     # Extract year, month, quarter, and week components
-    #     df['year'] = df['date'].dt.year
-    #     df['month'] = df['date'].dt.month
-    #     df['quarter'] = df['date'].dt.quarter
-    #     df['week'] = df['date'].dt.isocalendar().week
+        # Extract year, month, quarter, and week components
+        df["year"] = df["date"].dt.year
+        df["month"] = df["date"].dt.month
+        df["quarter"] = df["date"].dt.quarter
+        df["week"] = df["date"].dt.isocalendar().week
 
-    #     generateData = data_preparation.GenerateData(path="fakepath")
-    #     output = generateData.impute_data(df = df)
+        generateData = data_preparation.GenerateData(path="fakepath")
+        output = generateData.impute_data(df=df)
 
-    #     print(output)
+        assert output.shape == (182, 6)
