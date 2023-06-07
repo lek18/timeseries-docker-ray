@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Luis Ek <52711401+lek18@users.noreply.github.com>"]
 readme = "README.md"
-packages = [{include = "timeseries_docker_ray"}]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.11"

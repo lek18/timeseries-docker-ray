@@ -1,3 +1,5 @@
+import collections
+
 import pandas as pd
 
 # read the data
@@ -8,19 +10,32 @@ class GenerateData:
         self.path = path
         self.ts_columns = ["timestamp", "product_title", "sale_amount"]
 
-    def read_data(self):
-        return pd.read_csv(self.path, sep=",")
-
-    def generate_data(self) -> None:
-        # read the data
+    def generate_data(self) -> dict:
+        # read the raw data
+        time_series_data = self.read_data()
 
         # extract the date components (week, month, year, date)
+        time_series_data = self.get_dates(time_series_data)
 
-        # do the imputation
+        # get the full time series data between min and max date of each product
+        time_series_data_filled = self.fill_dates(time_series_data)
 
-        return None
+        # get the partition averages for our time series
+        time_series_data = self.get_partitions_averages(time_series_data)
 
-        # get the daily data
+        # do the imputation if required
+        time_series_data = self.impute_data(
+            filled_sales_df=time_series_data_filled, sales_df=time_series_data
+        )
+
+        # get aggregates for each product
+
+        output = self.get_aggregates(time_series_data)
+
+        return output
+
+    def read_data(self):
+        return pd.read_csv(self.path, sep=",")
 
     def get_dates(self, df: pd.DataFrame) -> pd.DataFrame:
         # Convert 'timestamp' column to datetime type
@@ -129,3 +144,29 @@ class GenerateData:
         )
 
         return filled_sales_df
+
+    def get_aggregates(self, df: pd.DataFrame) -> collections.defaultdict:
+        result = collections.defaultdict(lambda: collections.defaultdict(str))
+
+        products = df["product_title"].unique().tolist()
+
+        daily_ts = df[["product_title", "date", "sale_amount"]].copy()
+        weekly_ts = (
+            df[["product_title", "sale_amount", "week", "year"]]
+            .groupby(["product_title", "week", "year"], as_index=False)
+            .sum()
+        )
+        monthly_ts = (
+            df[["product_title", "sale_amount", "month", "year"]]
+            .groupby(["product_title", "month", "year"], as_index=False)
+            .sum()
+        )
+
+        for product in products:
+            result[product]["daily"] = daily_ts[daily_ts["product_title"] == product]
+            result[product]["weekly"] = weekly_ts[weekly_ts["product_title"] == product]
+            result[product]["monthly"] = monthly_ts[
+                monthly_ts["product_title"] == product
+            ]
+
+        return result

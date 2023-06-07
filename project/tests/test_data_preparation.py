@@ -144,7 +144,6 @@ class TestGenerateData:
         output = (
             output.groupby(["product_title"], as_index=False).count().to_dict("records")
         )
-        print(output)
         assert output == expected
 
     def test_impute_data(self):
@@ -164,4 +163,40 @@ class TestGenerateData:
             filled_sales_df=filled_sales_df, sales_df=time_series_df
         )
 
+        # the raw time series data is missing around 50% of the original rows
+        assert time_series_df.shape[0] <= self.time_range
+        # the output should have the same number of rows as our mock time range
         assert output.shape[0] == self.time_range
+        # there should be no empty sale amount
+        assert output["sale_amount"].isna().sum() == 0
+
+    def test_get_aggregates(self):
+        # i need a time series.
+        np.random.seed(42)
+        start_date = pd.Timestamp("2021-01-01")
+        end_date = pd.Timestamp("2021-02-02")
+        dates = pd.date_range(start_date, end_date)
+
+        products = ["Product_A", "Product_B", "Product_C"]
+
+        data = pd.DataFrame()
+
+        for product in products:
+            sales_amounts = np.random.randint(100, 1000, size=len(dates))
+            week_numbers = dates.isocalendar().week
+            month_numbers = dates.month
+            year_numbers = dates.year
+
+            rows_vals = {
+                "product_title": [product] * len(dates),
+                "date": dates,
+                "sale_amount": sales_amounts,
+                "week": week_numbers,
+                "month": month_numbers,
+                "year": year_numbers,
+            }
+            data = pd.concat([data, pd.DataFrame(rows_vals)], axis=0)
+
+        output = self.mockGenerateData.get_aggregates(data)
+
+        assert len(output) == len(products)
