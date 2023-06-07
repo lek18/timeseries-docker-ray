@@ -200,3 +200,11 @@ class TestGenerateData:
         output = self.mockGenerateData.get_aggregates(data)
 
         assert len(output) == len(products)
+
+    def test_generate_data(self):
+        mock_data_generator = data_preparation.GenerateData(
+            path="data/forecasting_toy_data.csv"
+        )
+        output = mock_data_generator.generate_data()
+
+        assert len(output) == 10
