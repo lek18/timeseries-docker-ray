@@ -36,4 +36,4 @@ Arima Time Series Forecasting using python in a docker container.
 timeframe values are ["weekly, "monthly", "daily"]
 1. To get predictions run: `docker run -di -v $(pwd):/src/app/data arima_model python app/main.py --timeframe "weekly" --filepath "/src/app/data/predictions"`
 2. Results are saved in `{pwd}/predictions_{timeframe}.csv`. Ensure to have docker write privilages to this location `pwd`
-3. To run the available test run: `docker run arima_model python -s -m pytest .`
+3. To run the available test run: `docker run arima_model python -m pytest .`
