@@ -3,7 +3,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import pytest
-from data import data_preparation
+from app.data import data_preparation
 
 
 class TestGenerateData:
@@ -203,7 +203,7 @@ class TestGenerateData:
 
     def test_generate_data(self):
         mock_data_generator = data_preparation.GenerateData(
-            path="data/forecasting_toy_data.csv"
+            path="app/data/forecasting_toy_data.csv"
         )
         output = mock_data_generator.generate_data()
 

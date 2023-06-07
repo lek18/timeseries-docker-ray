@@ -1,8 +1,10 @@
 import collections
 
 import pmdarima as pm
-from data import data_preparation
-from ml.utils import get_future_dates
+from app.data import data_preparation
+from app.ml.utils import get_future_dates
+
+# import json
 
 
 def train(path: str, timeframe: str = "monthly") -> dict:
