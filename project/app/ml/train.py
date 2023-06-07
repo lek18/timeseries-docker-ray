@@ -21,7 +21,12 @@ def train(path: str, timeframe: str = "monthly") -> dict:
         ts = data[product][timeframe]["sale_amount"].tolist()
 
         if len(ts) < time_series_length[timeframe]:
-            results[product] = {"Not available, few data points"}
+            results[product] = {
+                "test_mape": 0,
+                "future_dates": [0],
+                "predictions": [0],
+                "hit_production": "no",
+            }
 
         max_date = data[product]["daily"]["date"].max()
 
