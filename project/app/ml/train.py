@@ -1,8 +1,8 @@
 import collections
 
 import pmdarima as pm
-from app.data import data_preparation
-from app.ml.utils import get_future_dates
+from data import data_preparation
+from ml.utils import get_future_dates
 
 # import json
 
@@ -72,7 +72,3 @@ def train(path: str, timeframe: str = "monthly") -> dict:
         }
 
     return results
-
-
-if __name__ == "__main__":
-    results = train(path="data/forecasting_toy_data.csv")

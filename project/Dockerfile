@@ -2,38 +2,25 @@
 FROM python:3.11.2-slim-buster
 
 # set working directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /src/app
 
 # set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1\
-    PYTHONUNBUFFERED=1\
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
     POETRY_VERSION=1.4.1
 
-
-# install system dependencies
-RUN apt-get update \
-  && apt-get -y install netcat gcc curl\
-  && apt-get clean
-
-# install poetry - respects $POETRY_VERSION & $POETRY_HOME
-
-RUN pip install --upgrade pip\
-    pip install poetry==${POETRY_VERSION}
+# install poetry
+RUN pip install --upgrade pip && pip install poetry==${POETRY_VERSION}
 RUN poetry config virtualenvs.create false
-
-# install python dependencies
-COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-root
 
 # add app
 COPY . .
 
-# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+# create a directory for host volume
+RUN mkdir -p /host-data
 
-# add entrypoint.sh
-COPY ./entrypoint.sh .
-RUN chmod +x /usr/src/app/entrypoint.sh
+# set file permissions for the host volume directory
+RUN chown -R root:root /host-data
 
-# run entrypoint.sh
-ENTRYPOINT [ "/usr/src/app/entrypoint.sh"]
+# run the script and save output to both inside the container and host volume
+CMD ["python", "-u", "app/main.py", "/src/app/data/predictions.csv", "/host-data/predictions.csv"]
