@@ -9,7 +9,7 @@ def main():
     # Specify the file path
     file_path = sys.argv[1]
     print("-------------Fitting Arima Model ---------")
-    results = train(path="data/forecasting_toy_data.csv")
+    results = train(path="app/data/forecasting_toy_data.csv")
 
     # Convert dictionary to JSON string
 

@@ -13,6 +13,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN pip install --upgrade pip && pip install poetry==${POETRY_VERSION}
 RUN poetry config virtualenvs.create false
 
+# install python dependencies
+COPY poetry.lock pyproject.toml ./
+RUN poetry install --no-root
+
 # add app
 COPY . .
 
