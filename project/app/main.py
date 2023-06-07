@@ -1,4 +1,4 @@
-import sys
+import argparse
 import time
 
 import pandas as pd
@@ -6,10 +6,18 @@ from ml.train import train
 
 
 def main():
+    # specifying arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--timeframe", help="First argument")
+    parser.add_argument("--filepath", help="Second argument")
+    args = parser.parse_args()
+
     # Specify the file path
-    file_path = sys.argv[1]
+    timeframe = args.timeframe
+    file_path = args.filepath
     print("-------------Fitting Arima Model ---------")
-    results = train(path="app/data/forecasting_toy_data.csv")
+
+    results = train(path="app/data/forecasting_toy_data.csv", timeframe=timeframe)
 
     # Convert dictionary to JSON string
 
@@ -20,7 +28,7 @@ def main():
         output = pd.concat([output, df], axis=0)
 
     print("------------Saving Data-----------------")
-    output.to_csv(file_path, index=False)
+    output.to_csv(file_path + "_" + timeframe + ".csv", index=False)
     print("------------Complete-----------------")
 
 

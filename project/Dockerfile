@@ -20,11 +20,5 @@ RUN poetry install --no-root
 # add app
 COPY . .
 
-# create a directory for host volume
-RUN mkdir -p /host-data
-
-# set file permissions for the host volume directory
-RUN chown -R root:root /host-data
-
 # run the script and save output to both inside the container and host volume
-CMD ["python", "-u", "app/main.py", "/src/app/data/predictions.csv", "/host-data/predictions.csv"]
+ENTRYPOINT ["python", "-u", "app/main.py"]

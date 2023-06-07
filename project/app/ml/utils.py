@@ -20,11 +20,13 @@ def get_future_dates(max_date: pd.Timestamp, time_frame: str) -> List[str]:
         weeks = dates.isocalendar().week
         df = pd.DataFrame({"year": years, "week": weeks}).drop_duplicates()
         df["year-week"] = df["year"] + df["week"]
+        df = df.sort_values(["year", "week"], ascending=True)
         return df["year-week"].tolist()
 
     if time_frame == "monthly":
         months = dates.month
         print("hello", months)
         df = pd.DataFrame({"year": years, "month": months}).drop_duplicates()
+        df = df.sort_values(["year", "month"], ascending=True)
         df["year-month"] = df["year"].astype(str) + df["month"].astype(str)
         return df["year-month"].tolist()
