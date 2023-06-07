@@ -8,9 +8,7 @@ from app.ml.utils import get_future_dates
     [
         (pd.Timestamp("2021-01-01"), "daily"),  # Test case 1
         (pd.Timestamp("2021-01-01"), "weekly"),  # Test case 2
-        (pd.Timestamp("2021-01-01"), "monthly")(  # Test case 3
-            pd.Timestamp("2021-01-01"), "fake_timeframe"
-        ),  # Test case 4
+        (pd.Timestamp("2021-01-01"), "monthly"),  # Test case 3
     ],
 )
 def test_get_future_dates(param):
@@ -37,3 +35,9 @@ def test_get_future_dates(param):
         # the first month will be 2 and last month will be 8
         assert result[0] == "2021_2" and result[-1] == "2021_7"
         assert len(result) == 6
+
+
+def test_get_future_dates_raiseException():
+    max_date, time_frame = pd.Timestamp("2021-01-01"), "fake_timeframe"
+    with pytest.raises(Exception):
+        get_future_dates(max_date, time_frame)
