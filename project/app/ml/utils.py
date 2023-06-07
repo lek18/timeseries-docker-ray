@@ -19,7 +19,7 @@ def get_future_dates(max_date: pd.Timestamp, time_frame: str) -> List[str]:
     if time_frame == "weekly":
         weeks = dates.isocalendar().week
         df = pd.DataFrame({"year": years, "week": weeks}).drop_duplicates()
-        df["year-week"] = df["year"] + df["week"]
+        df["year-week"] = df["year"].astype(str) + df["week"].astype(str)
         df = df.sort_values(["year", "week"], ascending=True)
         return df["year-week"].tolist()
 
