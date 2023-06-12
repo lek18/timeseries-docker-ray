@@ -2,15 +2,13 @@
 FROM python:3.11.2-slim-buster
 
 # set working directory
-RUN mkdir -p /home/app
+RUN mkdir -p /src
 
 # create the app user
-RUN addgroup --system app && adduser --system --group app
+# RUN addgroup --system app && adduser --system --group app
 
 # create the appropriate directories
-ENV HOME=/home/app
-ENV APP_HOME=/home/app/web
-RUN mkdir $APP_HOME
+ENV APP_HOME=/src
 WORKDIR $APP_HOME
 
 # set environment variables
@@ -28,9 +26,3 @@ RUN poetry install --no-root
 
 # add app
 COPY . .
-
-# chown all the files to the app user
-RUN chown -R app:app $APP_HOME
-
-# change to the app user
-USER app
